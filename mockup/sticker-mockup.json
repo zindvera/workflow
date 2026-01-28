@@ -1,0 +1,154 @@
+[
+    {
+        "id": "laptop-1",
+        "imagename": "laptop_mockup_a",
+        "title": "Laptop Variation A",
+        "url": "https://images.pexels.com/photos/31846255/pexels-photo-31846255/free-photo-of-silver-laptop-on-white-bed-sheets.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500&loading=lazy",
+        "defaultState": {
+            "w": 250,
+            "scale": 0.4,
+            "x": 95,
+            "y": 59,
+            "rotateZ": -24,
+            "rotateX": 30,
+            "rotateY": -5,
+            "bright": 0.9,
+            "curve": 0,
+            "arch": 0,
+            "gloss": 0
+        }
+    },
+    {
+        "id": "laptop-2", 
+        "imagename": "laptop_mockup_b",
+        "title": "Laptop Variation B", 
+        "url": "https://images.pexels.com/photos/1229861/pexels-photo-1229861.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1&loading=lazy",
+        "defaultState": {
+            "w": 230,
+            "scale": 0.9,
+            "x": 0,
+            "y": 0,
+            "rotateZ": 0,
+            "rotateX": 10,
+            "rotateY": 0,
+            "bright": 0.95,
+            "curve": 0,
+            "arch": 0,
+            "gloss": 0
+        }
+    },
+    {
+        "id": "tablet-1",
+        "imagename": "tablet_mockup_a",
+        "title": "Tablet Variation A",
+        "url": "https://images.pexels.com/photos/221185/pexels-photo-221185.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1&loading=lazy",
+        "defaultState": {
+            "w": 180,
+            "scale": 1.1,
+            "x": 0,
+            "y": 0,
+            "rotateZ": 0,
+            "rotateX": 5,
+            "rotateY": 0,
+            "bright": 1.0,
+            "curve": 0,
+            "arch": 0,
+            "gloss": 0
+        }
+    },
+    {
+        "id": "tablet-2",
+        "imagename": "tablet_mockup_b", 
+        "title": "Tablet Variation B",
+        "url": "https://images.pexels.com/photos/1334597/pexels-photo-1334597.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1&loading=lazy",
+        "defaultState": {
+            "w": 200,
+            "scale": 1.0,
+            "x": 10,
+            "y": -10,
+            "rotateZ": 5,
+            "rotateX": 0,
+            "rotateY": 0,
+            "bright": 0.9,
+            "curve": 0,
+            "arch": 0,
+            "gloss": 0
+        }
+    },
+    {
+        "id": "phone-1",
+        "imagename": "phone_mockup_a",
+        "title": "Phone Variation A",
+        "url": "https://images.pexels.com/photos/4050291/pexels-photo-4050291.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1&loading=lazy",
+        "defaultState": {
+            "w": 300,
+            "scale": 0.6,
+            "x": -15,
+            "y": 40,
+            "rotateZ": 15,
+            "rotateX": -10,
+            "rotateY": 12,
+            "bright": 0.85,
+            "curve": 0,
+            "arch": 0,
+            "gloss": 0
+        }
+    },
+    {
+        "id": "phone-2",
+        "imagename": "phone_mockup_b",
+        "title": "Phone Variation B",
+        "url": "https://images.pexels.com/photos/1092671/pexels-photo-1092671.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1&loading=lazy",
+        "defaultState": {
+            "w": 280,
+            "scale": 0.7,
+            "x": 0,
+            "y": 0,
+            "rotateZ": 0,
+            "rotateX": 0,
+            "rotateY": 0,
+            "bright": 1.0,
+            "curve": 0,
+            "arch": 0,
+            "gloss": 0
+        }
+    },
+    {
+        "id": "car-1",
+        "imagename": "car_mockup_a",
+        "title": "Car Variation A",
+        "url": "https://images.pexels.com/photos/8586689/pexels-photo-8586689.jpeg?auto=compress&cs=tinysrgb&h=627&fit=crop&w=1200&loading=lazy",
+        "defaultState": {
+            "w": 220,
+            "scale": 0.7,
+            "x": 0,
+            "y": 20,
+            "rotateZ": 0,
+            "rotateX": 0,
+            "rotateY": 0,
+            "bright": 0.95,
+            "curve": 0,
+            "arch": 0,
+            "gloss": 0
+        }
+    },
+    {
+        "id": "car-2",
+        "imagename": "car_mockup_b",
+        "title": "Car Variation B",
+        "url": "https://images.pexels.com/photos/210019/pexels-photo-210019.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1&loading=lazy",
+        "defaultState": {
+            "w": 250,
+            "scale": 0.6,
+            "x": -50,
+            "y": 0,
+            "rotateZ": -5,
+            "rotateX": 0,
+            "rotateY": 10,
+            "bright": 0.8,
+            "curve": 0,
+            "arch": 0,
+            "gloss": 0
+        }
+    }
+]

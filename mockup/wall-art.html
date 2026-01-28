@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wall Art Mockup Generator Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #2563eb;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .art-container {
+            perspective: 1200px;
+            transform-style: preserve-3d;
+        }
+
+        /* Capture logic: ensure overflow is hidden only during capture */
+        .capturing {
+            overflow: hidden !important;
+        }
+
+        .capturing .edit-toggle,
+        .capturing .status-badge,
+        .capturing .edit-panel,
+        .capturing .change-bg-btn {
+            display: none !important;
+        }
+
+        .btn-loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        #mockup-list {
+            display: grid;
+            gap: 1.5rem;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .square-area {
+            aspect-ratio: 1 / 1.2;
+            width: 100%;
+            position: relative;
+            flex-shrink: 0;
+            background-color: #f3f4f6;
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Logic to allow panned images to bleed outside the square ONLY when editing */
+        .active-card .square-area {
+            overflow: visible;
+            z-index: 40;
+            box-shadow: 0 0 0 2px #3b82f6;
+        }
+
+        /* Default state: images are clipped to the square */
+        :not(.active-card) .square-area {
+            overflow: hidden;
+        }
+
+        /* Edit Panel Styles */
+        .edit-panel {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            height: 100%;
+            width: 280px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-left: none;
+            z-index: 100;
+            overflow-y: auto;
+            box-shadow: 10px 0 25px rgba(0, 0, 0, 0.1);
+            scrollbar-width: thin;
+        }
+
+        @media (max-width: 1023px) {
+            .edit-panel {
+                position: static;
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e5e7eb;
+                max-height: 400px;
+                box-shadow: none;
+            }
+        }
+
+        @media (max-width: 639px) {
+            #mockup-list {
+                grid-template-columns: 1fr;
+                max-width: 100%;
+            }
+        }
+
+        @media (min-width: 640px) and (max-width: 1023px) {
+            #mockup-list {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 98%;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            #mockup-list {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 1280px;
+            }
+        }
+
+        .active-card {
+            z-index: 50;
+        }
+    </style>
+</head>
+
+<body class="pb-32">
+    <div style="text-align: start; padding: 20px;">
+        <a href="index.html"
+            style="margin-right: 40px; color: #3b82f6; font-weight: 600; text-decoration: none; font-size: 18px;">Sticker</a>
+        <a href="#" style="margin-right: 40px; color: #10b981; font-weight: 600; text-decoration: none; font-size: 18px;">Wall Art</a>
+        <a href="vision-board.html" style="color: #6d10b9; font-weight: 600; text-decoration: none; font-size: 18px;">Vision Board</a>
+    </div>
+
+    <header class="bg-white border-b border-neutral-200 p-4 shadow-sm">
+        <div class="max-w-4xl mx-auto flex flex-col items-center gap-4">
+            <h1 class="text-xl font-bold tracking-tight text-neutral-800">Wall Art Mockup Studio</h1>
+            <div class="flex flex-col items-center gap-2">
+                <label id="upload-label"
+                    class="group relative flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full cursor-pointer transition-all active:scale-95 shadow-lg">
+                    <i data-lucide="image" class="w-5 h-5"></i>
+                    <span id="upload-text" class="font-medium">Upload Wall Art</span>
+                    <input type="file" id="file-input" class="hidden" accept="image/*">
+                </label>
+                <button id="remove-art"
+                    class="hidden text-xs text-neutral-500 hover:text-red-500 flex items-center gap-1 transition-colors">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Remove Art
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="mockup-list" class="px-2.5 mt-6">
+        <div id="empty-state"
+            class="col-span-full text-center py-20 border-2 border-dashed border-neutral-300 rounded-3xl bg-neutral-100/50">
+            <p id="empty-text" class="text-neutral-500 italic">Upload art to visualize in these spaces...</p>
+        </div>
+    </main>
+
+    <div id="download-all-bar"
+        class="bg-white border-t border-neutral-200 p-8 mt-12 hidden opacity-0 transition-opacity duration-500">
+        <div class="max-w-4xl mx-auto flex justify-end">
+            <button id="download-all-btn"
+                class="w-full sm:w-auto bg-neutral-900 hover:bg-black text-white px-8 py-3 rounded-xl font-bold flex items-center justify-center gap-3 transition-all active:scale-95">
+                <i data-lucide="archive" class="w-5 h-5"></i>
+                Download All (.zip)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let stickerUrl = null;
+        let mockupGroups = {}; // Global store for grouped backgrounds
+        let activeMockups = [];
+        let appState = {};
+        let draggingId = null;
+        let dragStart = { x: 0, y: 0, stickerX: 0, stickerY: 0 };
+
+        async function init() {
+            try {
+                const response = await fetch('wallart-mockup.json');
+                if (!response.ok) throw new Error('Could not load wallart-mockup.json');
+
+                const allMockups = await response.json();
+                
+                // Group by ID to handle multiple scenes per type
+                allMockups.forEach(m => {
+                    if (!mockupGroups[m.id]) mockupGroups[m.id] = [];
+                    mockupGroups[m.id].push(m);
+                });
+
+                // Pick one initial scene for each group
+                activeMockups = Object.keys(mockupGroups).map(id => {
+                    const group = mockupGroups[id];
+                    return group[Math.floor(Math.random() * group.length)];
+                });
+
+                // Initialize application state
+                activeMockups.forEach(m => {
+                    appState[m.id] = {
+                        isOpen: false,
+                        isConfigOpen: false,
+                        bgScale: 1.0,
+                        bgX: 0,
+                        bgY: 0,
+                        shL: 0,
+                        shR: 0,
+                        shT: 0,
+                        shB: 0,
+                        shBlur: 0,
+                        ...m.defaultState
+                    };
+                });
+
+                render();
+                setupEventListeners();
+
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                document.getElementById('empty-text').innerHTML =
+                    `<span class="text-red-500 font-semibold block mb-2">Error connecting to mockup data</span>
+                     <span class="text-xs text-neutral-400">Please ensure wallart-mockup.json is present in your root directory.</span>`;
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('file-input').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    document.getElementById('upload-text').innerText = 'Processing...';
+                    const reader = new FileReader();
+                    reader.onload = (f) => {
+                        stickerUrl = f.target.result;
+                        document.getElementById('upload-text').innerText = 'Upload Wall Art';
+                        document.getElementById('remove-art').classList.remove('hidden');
+                        document.getElementById('empty-state').classList.add('hidden');
+                        const bar = document.getElementById('download-all-bar');
+                        bar.classList.remove('hidden');
+                        setTimeout(() => bar.classList.remove('opacity-0'), 100);
+                        render();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            document.getElementById('remove-art').addEventListener('click', () => {
+                stickerUrl = null;
+                document.getElementById('remove-art').classList.add('hidden');
+                document.getElementById('empty-state').classList.remove('hidden');
+                const bar = document.getElementById('download-all-bar');
+                bar.classList.add('opacity-0');
+                setTimeout(() => bar.classList.add('hidden'), 500);
+                render();
+            });
+
+            document.getElementById('download-all-btn').addEventListener('click', downloadAll);
+            window.addEventListener('mousemove', handleMove);
+            window.addEventListener('mouseup', () => draggingId = null);
+            window.addEventListener('touchmove', handleMove, { passive: false });
+            window.addEventListener('touchend', () => draggingId = null);
+        }
+
+        function handleMove(e) {
+            if (!draggingId) return;
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
+            appState[draggingId].x = dragStart.stickerX + (cx - dragStart.x);
+            appState[draggingId].y = dragStart.stickerY + (cy - dragStart.y);
+            updateStickerTransform(draggingId);
+            updateConfigText(draggingId);
+        }
+
+        function updateStickerTransform(id) {
+            const s = appState[id];
+            const div = document.getElementById(`sticker-${id}`);
+            const img = document.getElementById(`img-${id}`);
+            const wrapper = document.getElementById(`wrapper-${id}`);
+            const bgImg = document.getElementById(`bg-img-${id}`);
+
+            if (bgImg) {
+                bgImg.style.transform = `translate(${s.bgX}px, ${s.bgY}px) scale(${s.bgScale})`;
+            }
+
+            if (div && img) {
+                div.style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale}) rotateZ(${s.rotateZ}deg) rotateX(${s.rotateX}deg) rotateY(${s.rotateY}deg)`;
+                img.style.filter = `brightness(${s.bright})`;
+                img.style.width = `${s.w}px`;
+                if (wrapper) {
+                    const opacity = s.shBlur / 150;
+                    wrapper.style.boxShadow = `-${s.shL}px -${s.shT}px ${s.shBlur}px rgba(0,0,0,${opacity}), ${s.shR}px ${s.shB}px ${s.shBlur}px rgba(0,0,0,${opacity})`;
+                }
+            }
+        }
+
+        function changeMockup(id) {
+            const group = mockupGroups[id];
+            if (!group || group.length <= 1) return;
+
+            const currentMockup = activeMockups.find(m => m.id === id);
+            const currentIndex = group.findIndex(m => m.url === currentMockup.url);
+            
+            const nextIndex = (currentIndex + 1) % group.length;
+            const nextMockup = group[nextIndex];
+
+            const activeIndex = activeMockups.findIndex(m => m.id === id);
+            activeMockups[activeIndex] = nextMockup;
+
+            const wasOpen = appState[id].isOpen;
+            const wasConfigOpen = appState[id].isConfigOpen;
+            
+            // Apply new background's defaults but keep control panel open/closed state
+            appState[id] = {
+                ...appState[id],
+                ...nextMockup.defaultState,
+                isOpen: wasOpen,
+                isConfigOpen: wasConfigOpen
+            };
+
+            render();
+        }
+
+        function updateVal(id, key, val) {
+            let numericVal = parseFloat(val);
+            if (isNaN(numericVal)) numericVal = 0;
+            appState[id][key] = numericVal;
+
+            const range = document.getElementById(`range-${id}-${key}`);
+            const input = document.getElementById(`input-${id}-${key}`);
+            if (range) range.value = numericVal;
+            if (input) input.value = numericVal;
+
+            updateStickerTransform(id);
+            updateConfigText(id);
+        }
+
+        async function captureSingle(id) {
+            const area = document.getElementById(`capture-area-${id}`);
+            const btn = document.getElementById(`dl-btn-${id}`);
+            const mockupData = activeMockups.find(m => m.id === id);
+
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            lucide.createIcons();
+            area.classList.add('capturing');
+
+            try {
+                const options = {
+                    pixelRatio: 3,
+                    quality: 0.95,
+                    backgroundColor: '#ffffff',
+                    cacheBust: true
+                };
+                const dataUrl = await htmlToImage.toJpeg(area, options);
+                saveAs(dataUrl, `${mockupData.imagename}.jpg`);
+            } catch (err) {
+                console.error("Capture failed", err);
+            } finally {
+                area.classList.remove('capturing');
+                btn.innerHTML = '<i data-lucide="download" class="w-3.5 h-3.5"></i> Download';
+                lucide.createIcons();
+            }
+        }
+
+        async function downloadAll() {
+            const btn = document.getElementById('download-all-btn');
+            btn.classList.add('btn-loading');
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Generating JPEGs...';
+            lucide.createIcons();
+
+            const zip = new JSZip();
+            const options = { pixelRatio: 3, quality: 0.95, backgroundColor: '#ffffff' };
+
+            try {
+                for (const m of activeMockups) {
+                    const area = document.getElementById(`capture-area-${m.id}`);
+                    area.classList.add('capturing');
+                    const dataUrl = await htmlToImage.toJpeg(area, options);
+                    zip.file(`${m.imagename}.jpg`, dataUrl.split(',')[1], { base64: true });
+                    area.classList.remove('capturing');
+                }
+                const zipBlob = await zip.generateAsync({ type: "blob" });
+                saveAs(zipBlob, "wall_art_mockups_batch.zip");
+            } catch (err) {
+                console.error("Zip generation failed", err);
+            } finally {
+                btn.classList.remove('btn-loading');
+                btn.innerHTML = '<i data-lucide="archive" class="w-5 h-5"></i> Download All (.zip)';
+                lucide.createIcons();
+            }
+        }
+
+        function toggleControls(id) {
+            Object.keys(appState).forEach(key => {
+                if (key !== id) appState[key].isOpen = false;
+            });
+            appState[id].isOpen = !appState[id].isOpen;
+            render();
+        }
+
+        function toggleConfig(id) { appState[id].isConfigOpen = !appState[id].isConfigOpen; render(); }
+
+        function updateConfigText(id) {
+            const input = document.getElementById(`config-input-${id}`);
+            if (input) {
+                const { isOpen, isConfigOpen, ...configValues } = appState[id];
+                input.value = JSON.stringify(configValues);
+            }
+        }
+
+        function render() {
+            const container = document.getElementById('mockup-list');
+            const emptyState = document.getElementById('empty-state');
+            container.innerHTML = '';
+            container.appendChild(emptyState);
+
+            activeMockups.forEach(m => {
+                const s = appState[m.id];
+                const { isOpen, isConfigOpen, ...configForJson } = s;
+                const card = document.createElement('div');
+                card.className = `w-full bg-white rounded-2xl shadow-md border border-neutral-200 flex flex-col transition-all duration-300 relative ${s.isOpen ? 'active-card' : 'overflow-hidden'}`;
+
+                const groupCount = mockupGroups[m.id]?.length || 0;
+
+                card.innerHTML = `
+                    <div class="flex flex-col relative h-full">
+                        <div id="capture-area-${m.id}" class="square-area select-none touch-none">
+                            <img id="bg-img-${m.id}" src="${m.url}" crossOrigin="anonymous" 
+                                 class="absolute top-0 left-0 max-w-none pointer-events-none"
+                                 style="transform: translate(${s.bgX}px, ${s.bgY}px) scale(${s.bgScale}); width: 100%; height: auto;">
+                            
+                            <!-- Change Background Button -->
+                            ${groupCount > 1 ? `
+                            <button onclick="changeMockup('${m.id}')" 
+                                    class="change-bg-btn absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur-sm transition-all z-20 shadow-lg active:scale-90"
+                                    title="Change background scene">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                            </button>
+                            ` : ''}
+
+                            ${stickerUrl ? `
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none art-container">
+                                    <div id="sticker-${m.id}" class="pointer-events-auto relative ${s.isOpen ? 'cursor-move' : 'cursor-not-allowed'}"
+                                         style="transform: translate(${s.x}px, ${s.y}px) scale(${s.scale}) rotateZ(${s.rotateZ}deg) rotateX(${s.rotateX}deg) rotateY(${s.rotateY}deg);">
+                                        <div id="wrapper-${m.id}" class="relative overflow-hidden" style="box-shadow: -${s.shL}px -${s.shT}px ${s.shBlur}px rgba(0,0,0,${s.shBlur / 150}), ${s.shR}px ${s.shB}px ${s.shBlur}px rgba(0,0,0,${s.shBlur / 150});">
+                                            <img id="img-${m.id}" src="${stickerUrl}" class="pointer-events-none block" style="width: ${s.w}px; filter: brightness(${s.bright});">
+                                        </div>
+                                        ${s.isOpen ? `<div class="edit-toggle absolute -inset-2 border-2 border-blue-500/50 rounded-lg"></div>` : ''}
+                                    </div>
+                                </div>
+                                
+                                <div class="status-badge absolute top-4 left-4 backdrop-blur px-3 py-1.5 rounded-full text-[10px] font-bold flex items-center gap-2 shadow-sm border z-10 ${s.isOpen ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-white/80 text-neutral-400 border-neutral-100'}">
+                                    <i data-lucide="${s.isOpen ? 'unlock' : 'lock'}" class="w-3 h-3"></i> ${s.isOpen ? 'EDITING' : 'LOCKED'}
+                                </div>
+                                
+                                <button onclick="toggleControls('${m.id}')" class="edit-toggle absolute bottom-4 right-4 p-3 rounded-full shadow-lg z-[60] ${s.isOpen ? 'bg-blue-600 text-white' : 'bg-white text-neutral-800 border'}">
+                                    <i data-lucide="${s.isOpen ? 'x' : 'sliders'}" class="w-5 h-5"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+
+                        ${s.isOpen && stickerUrl ? `
+                            <div class="edit-panel p-6 space-y-8 animate-in slide-in-from-left duration-300">
+                                <div class="flex flex-col gap-8 p-4 bg-blue-50 rounded-xl border border-blue-100 shadow-sm">
+                                    <h3 class="flex items-center gap-2 text-[11px] font-bold text-blue-600 uppercase tracking-wider"><i data-lucide="layout" class="w-3.5 h-3.5"></i> Mockup Canvas</h3>
+                                    ${slider(m.id, 'bgScale', 'Zoom Canvas', 0.5, 3, 0.05, s.bgScale)}
+                                    ${slider(m.id, 'bgX', 'Horiz Pan', -1000, 1000, 1, s.bgX)}
+                                    ${slider(m.id, 'bgY', 'Vert Pan', -1000, 1000, 1, s.bgY)}
+                                </div>
+                                <div class="flex flex-col gap-8">
+                                    <h3 class="flex items-center gap-2 text-[11px] font-bold text-neutral-600 uppercase tracking-wider"><i data-lucide="maximize" class="w-3.5 h-3.5"></i> Art Placement</h3>
+                                    ${slider(m.id, 'scale', 'Art Size', 0.1, 3, 0.05, s.scale)}
+                                    ${slider(m.id, 'rotateZ', 'Rotation', -180, 180, 1, s.rotateZ)}
+                                    ${slider(m.id, 'rotateX', 'Vert Tilt', -60, 60, 1, s.rotateX)}
+                                    ${slider(m.id, 'rotateY', 'Horiz Tilt', -60, 60, 1, s.rotateY)}
+                                </div>
+                                <div class="pt-8 border-t flex flex-col gap-8">
+                                    <h3 class="flex items-center gap-2 text-[11px] font-bold text-neutral-600 uppercase tracking-wider"><i data-lucide="sun" class="w-3.5 h-3.5"></i> Shading</h3>
+                                    ${slider(m.id, 'bright', 'Brightness', 0.2, 1.5, 0.05, s.bright)}
+                                    ${slider(m.id, 'shBlur', 'Softness', 0, 100, 1, s.shBlur)}
+                                    ${slider(m.id, 'shT', 'Top Shadow', 0, 50, 1, s.shT)}
+                                    ${slider(m.id, 'shB', 'Bottom Shadow', 0, 50, 1, s.shB)}
+                                    ${slider(m.id, 'shL', 'Left Shadow', 0, 50, 1, s.shL)}
+                                    ${slider(m.id, 'shR', 'Right Shadow', 0, 50, 1, s.shR)}
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="px-4 py-3 bg-white border-t flex justify-between items-center text-[10px] text-neutral-400 font-bold uppercase tracking-widest mt-auto">
+                        <div class="flex items-center gap-3">
+                            <span>${m.title}</span>
+                            <button onclick="toggleConfig('${m.id}')" class="text-blue-500 hover:underline">JSON CONFIG</button>
+                        </div>
+                        ${stickerUrl ? `<button id="dl-btn-${m.id}" onclick="captureSingle('${m.id}')" class="flex items-center gap-1.5 text-neutral-800 bg-neutral-100 hover:bg-neutral-200 px-3 py-1 rounded-md transition-colors"><i data-lucide="download" class="w-3.5 h-3.5"></i> Download</button>` : ''}
+                    </div>
+                    <div id="config-panel-${m.id}" class="bg-neutral-900 overflow-hidden transition-all duration-300 ${s.isConfigOpen ? 'max-h-32 p-3' : 'max-h-0'}">
+                        <input id="config-input-${m.id}" type="text" readonly class="w-full bg-neutral-800 text-neutral-200 text-[10px] p-2 rounded outline-none select-all font-mono" value='${JSON.stringify(configForJson)}'>
+                    </div>
+                `;
+                container.appendChild(card);
+                lucide.createIcons();
+
+                if (stickerUrl) {
+                    const sel = card.querySelector(`#sticker-${m.id}`);
+                    const start = (e) => {
+                        if (!appState[m.id].isOpen) return;
+                        if (e.cancelable) e.preventDefault();
+                        draggingId = m.id;
+                        const cx = e.touches ? e.touches[0].clientX : e.clientX;
+                        const cy = e.touches ? e.touches[0].clientY : e.clientY;
+                        dragStart = { x: cx, y: cy, stickerX: appState[m.id].x, stickerY: appState[m.id].y };
+                    };
+                    sel.addEventListener('mousedown', start);
+                    sel.addEventListener('touchstart', start);
+                }
+            });
+        }
+
+        function slider(id, key, label, min, max, step, val) {
+            return `
+                <div class="flex flex-col gap-2 w-full">
+                    <label class="text-[9px] font-bold text-neutral-400 uppercase tracking-wide">${label}</label>
+                    <input type="range" id="range-${id}-${key}" min="${min}" max="${max}" step="${step}" value="${val}" 
+                            oninput="updateVal('${id}', '${key}', this.value)" class="range-slider w-full">
+                    <div class="flex justify-end">
+                        <input type="number" id="input-${id}-${key}" step="${step}" min="${min}" max="${max}" value="${val}" 
+                               oninput="updateVal('${id}', '${key}', this.value)"
+                               class="w-14 bg-neutral-100 text-neutral-700 text-[10px] font-mono px-1 py-1 rounded border border-neutral-200 focus:outline-none focus:ring-1 focus:ring-blue-400 text-right">
+                    </div>
+                </div> 
+            `;
+        }
+        window.onload = init;
+    </script>
+</body>
+
+</html>
