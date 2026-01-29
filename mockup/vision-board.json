@@ -19,7 +19,7 @@
         "imagename": "mock-2",
         "title": "mock 2",
         "url": "images/vision-board/vb1.jpg",
-        "defaultState": {"bgScale":1.4,"bgX":-12,"bgY":59,"shL":0,"shR":3,"shT":0,"shB":0,"shBlur":7,"w":320,"scale":0.55,"x":-14,"y":-169,"rotateZ":0,"rotateX":-1,"rotateY":-2,"bright":0.92}
+        "defaultState": {"bgScale":1.4,"bgX":-12,"bgY":59,"shL":0,"shR":3,"shT":0,"shB":3,"shBlur":7,"w":320,"scale":0.55,"x":-14,"y":-169,"rotateZ":0,"rotateX":0,"rotateY":0,"bright":0.9}
     },
     {
         "id": "mock2",
