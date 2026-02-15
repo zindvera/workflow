@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Collage Studio - FegoPrint</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root { --primary-red: #dc3545; --workspace-bg: #f3f4f6; }
+        body { font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; background-color: var(--workspace-bg); }
+
+        .sidebar { width: 350px; background: #fff; border-right: 1px solid #dee2e6; height: 100vh; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; z-index: 1000; }
+        .section-title { font-size: 0.7rem; font-weight: 800; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 0.8rem; border-top: 1px solid #eee; padding-top: 1rem; display: block; }
+
+        .preview-pane { flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; height: 100vh; overflow: auto; }
+        
+        /* THE PIN CANVAS - Default Height 580px */
+        .pin-container { width: 400px; height: 580px; box-shadow: 0 2rem 5rem rgba(0,0,0,0.15); position: relative; background-color: #ffffff; overflow: hidden; display: flex; flex-direction: column; }
+
+        .image-grid-container { display: grid; gap: 4px; width: 100%; padding: 4px; background: #fff; grid-template-columns: repeat(2, 1fr); align-content: start; }
+        .image-grid-container.grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-item { width: 100%; height: auto; min-height: 150px; object-fit: cover; border-radius: 2px; }
+
+        .upload-label { border: 2px dashed #dee2e6; border-radius: 0.75rem; padding: 1.2rem; text-align: center; cursor: pointer; display: block; background: #fff; transition: 0.2s; }
+        .btn-action { background: #000; color: white; font-weight: 900; padding: 1.1rem; border-radius: 1rem; border: none; width: 100%; margin-top: auto; letter-spacing: 1px; }
+        .form-range::-webkit-slider-thumb { background: #000; }
+    </style>
+</head>
+<body class="d-flex flex-column flex-md-row">
+
+    <aside class="sidebar">
+        <div class="mb-1">
+            <h4 class="fw-900 mb-0">Pin Studio V3</h4>
+            <p class="text-muted small">Amazon Overlay Engine</p>
+        </div>
+
+        <div>
+            <span class="section-title">Canvas Dimensions</span>
+            <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1 text-muted small fw-bold"><span>Height</span><span id="canvasHeightVal">580</span></div>
+                <input type="range" id="canvasHeightSlider" min="400" max="800" step="5" value="580" class="form-range">
+            </div>
+            <div class="d-flex justify-content-between text-muted" style="font-size: 10px; font-weight: 700;">
+                <span>MIN (1:1)</span>
+                <span>MAX (1:2)</span>
+            </div>
+        </div>
+
+        <div>
+            <input type="file" id="imageUpload" accept="image/*" class="d-none" multiple>
+            <label for="imageUpload" class="upload-label">
+                <span class="small fw-bold text-secondary text-uppercase">+ Add Mockups (Max 9)</span>
+            </label>
+            <button id="clearImages" class="btn btn-sm btn-link text-danger w-100 fw-bold mt-1" style="font-size: 10px;">CLEAR ALL</button>
+        </div>
+
+        <div>
+            <span class="section-title">Design Controls</span>
+            <button id="cycleOverlay" class="btn btn-sm btn-outline-dark w-100 fw-bold mb-3">NEXT STYLE</button>
+            
+            <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1 text-muted small fw-bold"><span>Zoom</span><span id="overlayZoomVal">1.0</span></div>
+                <input type="range" id="overlayZoom" min="0.5" max="1.5" step="0.05" value="1" class="form-range">
+            </div>
+            
+            <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1 text-muted small fw-bold"><span>X Position</span><span id="overlayXVal">0</span></div>
+                <input type="range" id="overlayX" min="-150" max="150" value="0" class="form-range">
+            </div>
+
+            <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1 text-muted small fw-bold"><span>Y Position</span><span id="overlayYVal">0</span></div>
+                <input type="range" id="overlayY" min="-300" max="400" value="0" class="form-range">
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1 text-muted small fw-bold"><span>BG Dimmer</span><span id="dimmerVal">0</span></div>
+                <input type="range" id="dimmerSlider" min="0" max="0.8" step="0.05" value="0" class="form-range">
+            </div>
+
+            <button id="resetOverlay" class="btn btn-sm btn-light w-100 fw-bold" style="font-size: 10px;">RESET ALL</button>
+        </div>
+
+        <button id="downloadBtn" class="btn-action text-uppercase">Export Collage PNG</button>
+    </aside>
+
+    <main class="preview-pane">
+        <div id="captureArea" class="pin-container">
+            <div id="imageGrid" class="image-grid-container"></div>
+            <div id="dimmerLayer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0); pointer-events: none; z-index: 40;"></div>
+            <div id="overlayWrapper" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; transform-origin: top center;">
+                <div id="overlayContainer"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let uploadedImages = [], overlayData = [], currentDesignIndex = 0, ovZoom = 1, ovX = 0, ovY = 0;
+
+        const imageGrid = document.getElementById('imageGrid'), captureArea = document.getElementById('captureArea');
+        const overlayWrapper = document.getElementById('overlayWrapper'), overlayContainer = document.getElementById('overlayContainer');
+        const dimmerLayer = document.getElementById('dimmerLayer');
+        const canvasHeightSlider = document.getElementById('canvasHeightSlider'), canvasHeightVal = document.getElementById('canvasHeightVal');
+
+        async function loadOverlays() {
+            try {
+                const response = await fetch('imageOverlay.json');
+                const data = await response.json();
+                overlayData = data.amazon_designs;
+                renderOverlay();
+            } catch (err) { console.error("JSON Error:", err); }
+        }
+
+        function renderOverlay() { if (overlayContainer && overlayData[currentDesignIndex]) overlayContainer.innerHTML = overlayData[currentDesignIndex].html; }
+
+        function updateTransform() {
+            overlayWrapper.style.transform = `translate(${ovX}px, ${ovY}px) scale(${ovZoom})`;
+            document.getElementById('overlayZoomVal').innerText = ovZoom;
+            document.getElementById('overlayXVal').innerText = ovX;
+            document.getElementById('overlayYVal').innerText = ovY;
+        }
+
+        canvasHeightSlider.oninput = (e) => {
+            captureArea.style.height = `${e.target.value}px`;
+            canvasHeightVal.innerText = e.target.value;
+        };
+
+        document.getElementById('dimmerSlider').oninput = (e) => {
+            dimmerLayer.style.background = `rgba(0,0,0,${e.target.value})`;
+            document.getElementById('dimmerVal').innerText = e.target.value;
+        };
+
+        document.getElementById('overlayZoom').oninput = (e) => { ovZoom = e.target.value; updateTransform(); };
+        document.getElementById('overlayX').oninput = (e) => { ovX = e.target.value; updateTransform(); };
+        document.getElementById('overlayY').oninput = (e) => { ovY = e.target.value; updateTransform(); };
+        
+        document.getElementById('resetOverlay').onclick = () => {
+            ovZoom = 1; ovX = 0; ovY = 0;
+            dimmerLayer.style.background = 'rgba(0,0,0,0)';
+            captureArea.style.height = '580px';
+            canvasHeightSlider.value = 580;
+            canvasHeightVal.innerText = 580;
+            ['overlayZoom','overlayX','overlayY','dimmerSlider'].forEach(id => {
+                const el = document.getElementById(id);
+                el.value = (id==='overlayZoom'?1:0);
+            });
+            updateTransform();
+        };
+
+        document.getElementById('cycleOverlay').onclick = () => {
+            currentDesignIndex = (currentDesignIndex + 1) % overlayData.length;
+            renderOverlay();
+        };
+
+        document.getElementById('imageUpload').addEventListener('change', (e) => {
+            Array.from(e.target.files).forEach(file => {
+                if (uploadedImages.length < 9) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => { uploadedImages.push(ev.target.result); renderGrid(); };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        function renderGrid() {
+            imageGrid.innerHTML = '';
+            if (uploadedImages.length > 6) imageGrid.classList.add('grid-3');
+            else imageGrid.classList.remove('grid-3');
+            uploadedImages.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src; img.className = 'grid-item'; imageGrid.appendChild(img);
+            });
+        }
+
+        document.getElementById('clearImages').onclick = () => { uploadedImages = []; renderGrid(); };
+        document.getElementById('downloadBtn').onclick = () => {
+            html2canvas(captureArea, { scale: 3, useCORS: true }).then(canvas => {
+                const link = document.createElement('a'); link.download = `pin-${Date.now()}.png`; link.href = canvas.toDataURL(); link.click();
+            });
+        };
+        loadOverlays();
+    </script>
+</body>
+</html>
