@@ -37,13 +37,13 @@
         #display-t2 { display: block; color: #666; margin: 4px 0; text-transform: lowercase; }
         #display-t3 { display: block; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1a1a1a; }
 
-        .prompt-list { list-style: none; padding: 0; margin: 0; }
+        .prompt-list { list-style: none; padding: 0; margin-top: 0.26in; }
         .prompt-item { display: flex; align-items: flex-start; margin-bottom: 22px; }
-        .p-num { font-weight: 900; color: #ccc; font-size: 0.85rem; min-width: 35px; margin-top: 4px; }
-        .p-text { font-size: 1.1rem; color: #2d2d2d; font-weight: 600; line-height: 1.45; flex: 1; }
+        .p-num { font-weight: 900; color: #ccc; font-size: 0.85rem; min-width: 30px; margin-top: 4px; }
+        .p-text { font-size: 1.1rem; color: #2d2d2d; font-weight: 600; line-height: 1.55; flex: 1; }
 
-        .teaser-badge { margin-top: 15px; background: rgba(0,0,0,0.04); padding: 12px; text-align: center; border-radius: 4px; font-weight: 800; font-size: 0.85rem; color: #333; }
-        .pin-footer { margin-top: 25px; text-align: center; }
+        .teaser-badge { margin-top: 5px; padding: 12px; text-align: center; border-radius: 4px; font-weight: 800; font-size: 0.85rem; color: #333; }
+        .pin-footer { margin-top: 5px; text-align: center; }
         .footer-logo { height: 24px; width: auto; opacity: 0.85; }
 
         .btn-export { background: #1a1a1a; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 900; margin-top: 10px; width: 100%; cursor: pointer; }
@@ -67,7 +67,7 @@
                 <input type="number" id="fs-t1" value="30" style="width: 70px;">
                 <select id="ff-t1" class="font-sel">
                     <option value="'Playfair Display', serif">Playfair</option>
-                    <option value="'Inter', sans-serif">Inter</option>
+                    <option value="'Inter', sans-serif" >Inter</option>
                     <option value="'Montserrat', sans-serif">Montserrat</option>
                     <option value="'Lora', serif">Lora</option>
                     <option value="'Poppins', sans-serif">Poppins</option>
@@ -142,25 +142,18 @@
             const pin = document.getElementById('captureArea');
             pin.style.backgroundColor = document.getElementById('page-color').value;
 
-            // Line 1
-            const t1 = document.getElementById('display-t1');
-            t1.innerText = document.getElementById('in-t1').value;
-            t1.style.fontSize = document.getElementById('fs-t1').value + 'px';
-            t1.style.fontFamily = document.getElementById('ff-t1').value;
+            document.getElementById('display-t1').innerText = document.getElementById('in-t1').value;
+            document.getElementById('display-t1').style.fontSize = document.getElementById('fs-t1').value + 'px';
+            document.getElementById('display-t1').style.fontFamily = document.getElementById('ff-t1').value;
 
-            // Line 2
-            const t2 = document.getElementById('display-t2');
-            t2.innerText = document.getElementById('in-t2').value;
-            t2.style.fontSize = document.getElementById('fs-t2').value + 'px';
-            t2.style.fontFamily = document.getElementById('ff-t2').value;
+            document.getElementById('display-t2').innerText = document.getElementById('in-t2').value;
+            document.getElementById('display-t2').style.fontSize = document.getElementById('fs-t2').value + 'px';
+            document.getElementById('display-t2').style.fontFamily = document.getElementById('ff-t2').value;
 
-            // Line 3
-            const t3 = document.getElementById('display-t3');
-            t3.innerText = document.getElementById('in-t3').value;
-            t3.style.fontSize = document.getElementById('fs-t3').value + 'px';
-            t3.style.fontFamily = document.getElementById('ff-t3').value;
+            document.getElementById('display-t3').innerText = document.getElementById('in-t3').value;
+            document.getElementById('display-t3').style.fontSize = document.getElementById('fs-t3').value + 'px';
+            document.getElementById('display-t3').style.fontFamily = document.getElementById('ff-t3').value;
 
-            // List
             const listFont = document.getElementById('ff-list').value;
             const text = document.getElementById('p-content').value;
             const lines = text.split('\n').filter(l => l.trim() !== '');
@@ -170,18 +163,16 @@
             lines.forEach((line, i) => {
                 container.innerHTML += `
                     <div class="prompt-item" style="font-family: ${listFont}">
-                        <div class="p-num">0${i+1}.</div>
+                        <div class="p-num">${i+1}.</div>
                         <div class="p-text">${line}</div>
                     </div>`;
             });
 
-            // Teaser logic
             const total = parseInt(document.getElementById('total-count').value) || 0;
             const remaining = total - lines.length;
             document.getElementById('calc-num').innerText = remaining > 0 ? remaining : 0;
             document.getElementById('teaser-area').style.display = remaining > 0 ? 'block' : 'none';
 
-            // Height Alert
             document.getElementById('height-alert').style.display = pin.offsetHeight > 1500 ? 'block' : 'none';
         }
 
