@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affirzone Advanced Font Studio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Playfair+Display:wght@700&family=Montserrat:wght@700&family=Lora:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root { --workspace-bg: #cbd5e1; --input-focus: #fdfaf1; --danger: #dc3545; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--workspace-bg); height: 100vh; overflow: hidden; display: flex; }
+        
+        .sidebar { width: 420px; background: white; border-right: 1px solid #ddd; height: 100vh; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; }
+        .control-group { background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #eee; }
+        label { font-size: 0.6rem; font-weight: 800; color: #666; text-transform: uppercase; margin-bottom: 3px; display: block; }
+        
+        input, textarea, select { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 5px 8px; font-size: 0.85rem; transition: all 0.2s; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #d2b48c; background-color: var(--input-focus); }
+
+        #height-alert { display: none; background: #fff5f5; border: 1px solid var(--danger); color: var(--danger); padding: 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; margin-top: 5px; }
+
+        .preview-pane { flex-grow: 1; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px; }
+        
+        .pin-container { 
+            width: 500px; height: fit-content; position: relative;
+            padding: 50px 45px 30px 45px; display: flex; flex-direction: column; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.1); overflow: hidden;
+        }
+
+        .pin-container::before { content: ""; position: absolute; top: 0; left: 0; width: 180px; height: 180px; background: radial-gradient(circle at top left, rgba(173, 216, 230, 0.12), transparent 75%); pointer-events: none; }
+        .pin-container::after { content: ""; position: absolute; bottom: 0; right: 0; width: 180px; height: 180px; background: radial-gradient(circle at bottom right, rgba(255, 0, 0, 0.06), transparent 75%); pointer-events: none; }
+
+        .title-wrapper { text-align: center; margin-bottom: 30px; line-height: 1.2; }
+        #display-t1 { display: block; font-weight: 700; color: #1a1a1a; }
+        #display-t2 { display: block; color: #666; margin: 4px 0; text-transform: lowercase; }
+        #display-t3 { display: block; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #1a1a1a; }
+
+        .prompt-list { list-style: none; padding: 0; margin: 0; }
+        .prompt-item { display: flex; align-items: flex-start; margin-bottom: 22px; }
+        .p-num { font-weight: 900; color: #ccc; font-size: 0.85rem; min-width: 35px; margin-top: 4px; }
+        .p-text { font-size: 1.1rem; color: #2d2d2d; font-weight: 600; line-height: 1.45; flex: 1; }
+
+        .teaser-badge { margin-top: 15px; background: rgba(0,0,0,0.04); padding: 12px; text-align: center; border-radius: 4px; font-weight: 800; font-size: 0.85rem; color: #333; }
+        .pin-footer { margin-top: 25px; text-align: center; }
+        .footer-logo { height: 24px; width: auto; opacity: 0.85; }
+
+        .btn-export { background: #1a1a1a; color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 900; margin-top: 10px; width: 100%; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h6 class="fw-900 mb-1">Affirzone Pro Studio</h6>
+        
+        <div class="control-group">
+            <label>Canvas Color</label>
+            <input type="color" id="page-color" value="#f6efee">
+            <div id="height-alert">⚠️ WARNING: Pin height exceeds 1500px.</div>
+        </div>
+
+        <div class="control-group">
+            <label>Line 1 (Text / Size / Font)</label>
+            <input type="text" id="in-t1" value="12 Journal Prompts" class="mb-1">
+            <div class="flex-row">
+                <input type="number" id="fs-t1" value="30" style="width: 70px;">
+                <select id="ff-t1" class="font-sel">
+                    <option value="'Playfair Display', serif">Playfair</option>
+                    <option value="'Inter', sans-serif">Inter</option>
+                    <option value="'Montserrat', sans-serif">Montserrat</option>
+                    <option value="'Lora', serif">Lora</option>
+                    <option value="'Poppins', sans-serif">Poppins</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Line 2 (Text / Size / Font)</label>
+            <input type="text" id="in-t2" value="for" class="mb-1">
+            <div class="flex-row">
+                <input type="number" id="fs-t2" value="18" style="width: 70px;">
+                <select id="ff-t2" class="font-sel">
+                    <option value="'Inter', sans-serif">Inter</option>
+                    <option value="'Playfair Display', serif">Playfair</option>
+                    <option value="'Lora', serif">Lora</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Line 3 (Text / Size / Font)</label>
+            <input type="text" id="in-t3" value="Healing & Recovery" class="mb-1">
+            <div class="flex-row">
+                <input type="number" id="fs-t3" value="32" style="width: 70px;">
+                <select id="ff-t3" class="font-sel">
+                    <option value="'Inter', sans-serif">Inter Bold</option>
+                    <option value="'Montserrat', sans-serif">Montserrat</option>
+                    <option value="'Poppins', sans-serif">Poppins</option>
+                    <option value="'Playfair Display', serif">Playfair</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Prompts (Total Count / Font)</label>
+            <div class="flex-row mb-2">
+                <input type="number" id="total-count" value="12">
+                <select id="ff-list" class="font-sel">
+                    <option value="'Inter', sans-serif">Inter</option>
+                    <option value="'Poppins', sans-serif">Poppins</option>
+                    <option value="'Lora', serif">Lora</option>
+                    <option value="'Montserrat', sans-serif">Montserrat</option>
+                </select>
+            </div>
+            <label>Prompt Content</label>
+            <textarea id="p-content" rows="6"></textarea>
+        </div>
+
+        <button id="downloadBtn" class="btn-export">EXPORT PNG PIN</button>
+    </aside>
+
+    <main class="preview-pane">
+        <div id="captureArea" class="pin-container" style="background-color: #f6efee;">
+            <div class="title-wrapper">
+                <span id="display-t1"></span>
+                <span id="display-t2"></span>
+                <span id="display-t3"></span>
+            </div>
+            <div id="display-prompts" class="prompt-list"></div>
+            <div id="teaser-area" class="teaser-badge">+ <span id="calc-num"></span> MORE PROMPTS INSIDE</div>
+            <div class="pin-footer">
+                <img src="https://affirzone.store/media/Affirzone-logo.png" crossorigin="anonymous" class="footer-logo" alt="Affirzone Logo">
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const ids = ['in-t1', 'in-t2', 'in-t3', 'fs-t1', 'fs-t2', 'fs-t3', 'ff-t1', 'ff-t2', 'ff-t3', 'ff-list', 'total-count', 'p-content', 'page-color'];
+        
+        function updatePreview() {
+            const pin = document.getElementById('captureArea');
+            pin.style.backgroundColor = document.getElementById('page-color').value;
+
+            // Line 1
+            const t1 = document.getElementById('display-t1');
+            t1.innerText = document.getElementById('in-t1').value;
+            t1.style.fontSize = document.getElementById('fs-t1').value + 'px';
+            t1.style.fontFamily = document.getElementById('ff-t1').value;
+
+            // Line 2
+            const t2 = document.getElementById('display-t2');
+            t2.innerText = document.getElementById('in-t2').value;
+            t2.style.fontSize = document.getElementById('fs-t2').value + 'px';
+            t2.style.fontFamily = document.getElementById('ff-t2').value;
+
+            // Line 3
+            const t3 = document.getElementById('display-t3');
+            t3.innerText = document.getElementById('in-t3').value;
+            t3.style.fontSize = document.getElementById('fs-t3').value + 'px';
+            t3.style.fontFamily = document.getElementById('ff-t3').value;
+
+            // List
+            const listFont = document.getElementById('ff-list').value;
+            const text = document.getElementById('p-content').value;
+            const lines = text.split('\n').filter(l => l.trim() !== '');
+            const container = document.getElementById('display-prompts');
+            container.innerHTML = '';
+            
+            lines.forEach((line, i) => {
+                container.innerHTML += `
+                    <div class="prompt-item" style="font-family: ${listFont}">
+                        <div class="p-num">0${i+1}.</div>
+                        <div class="p-text">${line}</div>
+                    </div>`;
+            });
+
+            // Teaser logic
+            const total = parseInt(document.getElementById('total-count').value) || 0;
+            const remaining = total - lines.length;
+            document.getElementById('calc-num').innerText = remaining > 0 ? remaining : 0;
+            document.getElementById('teaser-area').style.display = remaining > 0 ? 'block' : 'none';
+
+            // Height Alert
+            document.getElementById('height-alert').style.display = pin.offsetHeight > 1500 ? 'block' : 'none';
+        }
+
+        ids.forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            html2canvas(document.getElementById('captureArea'), { 
+                scale: 3, useCORS: true, allowTaint: false 
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Affirzone-Pin-${Date.now()}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        });
+
+        document.getElementById('p-content').value = "What is one hard feeling you have had lately?\nHow does letting go help you feel at peace?\nWhat are three things that make you feel safe?";
+        updatePreview();
+    </script>
+</body>
+</html>

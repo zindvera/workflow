@@ -1,8 +1,18 @@
-{
-  "amazon_designs": [
-    {
-      "id": "modern-free-stripes",
-      "html": "<div style='display: flex; flex-direction: column; align-items: center; gap: 12px; font-family: Inter, sans-serif;'>\n\n  \n  <div style='background: #CC6600; color: #fff; padding: 6px 20px; font-weight: 900; font-size: 11px; letter-spacing: 1px; clip-path: polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%); filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.2));'>\n    Amazon Best Seller\n  </div>\n\n  \n  <div style='background: #ffffff; color: #000; padding: 12px 30px; font-weight: 900; font-size: 20px; border-left: 6px solid #FF9900; box-shadow: 5px 5px 15px rgba(0,0,0,0.1); clip-path: polygon(0% 0%, 95% 0%, 100% 50%, 95% 100%, 0% 100%);'>\n    Gadgets & Tools\n  </div>\n\n  \n  <div style='background: #F0F8FF; color: #333; padding: 10px 25px; font-weight: 800; font-size: 16px; clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%); margin-top: -5px;'>\n    For Kitchen Improvement\n  </div>\n\n</div>"
-    }
-  ]
-}
+[
+  {
+    "amazon_designs": [
+      {
+        "id": "modern-free-stripes",
+        "html": "<div style='display: flex; flex-direction: column; align-items: center; gap: 12px; font-family: Inter, sans-serif;'>\n\n  <div style='background: #CC6600; color: #fff; padding: 6px 20px; font-weight: 900; font-size: 11px; letter-spacing: 1px; clip-path: polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%); filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.2));'>Amazon Best Seller</div>\n\n  <div style='background: #ffffff; color: #000; padding: 12px 30px; font-weight: 900; font-size: 20px; border-left: 6px solid #FF9900; box-shadow: 5px 5px 15px rgba(0,0,0,0.1); clip-path: polygon(0% 0%, 95% 0%, 100% 50%, 95% 100%, 0% 100%);'>Gadgets & Tools</div>\n\n  <div style='background: #F0F8FF; color: #333; padding: 10px 25px; font-weight: 800; font-size: 16px; clip-path: polygon(5% 0%, 95% 0%, 100% 100%, 0% 100%); margin-top: -5px;'>For Kitchen Improvement</div>\n\n</div>"
+      },
+      {
+        "id": "apartment-decor-aesthetic",
+        "html": "<div style='display: flex; flex-direction: column; align-items: center; gap: 20px; font-family: Inter, sans-serif; width: 100%; padding-top: 50px;'>\n\n  <div style='background: linear-gradient(135deg, #FF9900 0%, #FFCC00 100%); color: #111; padding: 12px 35px; font-weight: 900; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; clip-path: polygon(0% 15%, 100% 0%, 95% 85%, 5% 100%); box-shadow: 0 5px 15px rgba(255,153,0,0.3);'>Amazon Products For</div>\n\n  <div style='background: linear-gradient(120deg, #fce4ec 0%, #efebe9 100%); padding: 22px 50px; clip-path: polygon(3% 0%, 100% 0%, 97% 100%, 0% 100%); box-shadow: 0 10px 30px rgba(121, 85, 72, 0.15); border: 1.5px solid rgba(255,255,255,0.8);'>\n    <h1 style='margin: 0; font-size: 38px; font-weight: 900; text-transform: uppercase; letter-spacing: -1px; line-height: 1.1; background: linear-gradient(to bottom, #5d4037 0%, #2d1b15 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>Apartment<br>Decoration</h1>\n  </div>\n\n  <div style='background: #3e2723; color: #fff; padding: 14px 40px; font-weight: 800; font-size: 19px; clip-path: polygon(0% 0%, 98% 5%, 100% 100%, 2% 95%); box-shadow: 0 6px 15px rgba(0,0,0,0.25);'>View on Amazon <span style='color: #FFCC00; margin-left: 8px;'>➔</span></div>\n\n</div>"
+      },
+      {
+        "id": "apartment-decor-highlight",
+        "html": "<div style='display: flex; flex-direction: column; align-items: center; gap: 25px; font-family: Inter, sans-serif; width: 100%; padding-top: 60px; box-sizing: border-box;'>\n\n  \n  <div style='background: #FF9900; color: #111; padding: 10px 25px; font-weight: 900; font-size: 22px; letter-spacing: 2px; text-transform: uppercase; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);'>\n    Amazon Products For\n  </div>\n\n  \n  <div style='text-align: center; max-width: 85%;'>\n    <h1 style='margin: 0; font-size: 65px; font-weight: 900; color: #ffffff; text-transform: uppercase; line-height: 1.3;'>\n      <span style='background-color: rgba(30, 30, 30, 0.85); padding: 5px 20px; box-decoration-break: clone; -webkit-box-decoration-break: clone; border-radius: 8px;'>\n        Apartment<br>Decoration\n      </span>\n    </h1>\n  </div>\n\n  \n  <div style='background: #111; color: #fff; padding: 14px 25px; font-weight: 800; font-size: 30px; clip-path: polygon(0% 0%, 98% 5%, 100% 100%, 2% 95%); margin-top: 10px;'>\n    View on Amazon <span style='color: #FF9900; margin-left: 10px;'>➔</span>\n  </div>\n\n</div>"
+      }
+    ]
+  }
+]

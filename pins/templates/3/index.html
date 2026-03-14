@@ -97,91 +97,129 @@
         </div>
     </main>
 
-    <script>
-        let uploadedImages = [], overlayData = [], currentDesignIndex = 0, ovZoom = 1, ovX = 0, ovY = 0;
+ <script>
+    let uploadedImages = [], overlayData = [], currentDesignIndex = 0, ovZoom = 1, ovX = 0, ovY = 0;
 
-        const imageGrid = document.getElementById('imageGrid'), captureArea = document.getElementById('captureArea');
-        const overlayWrapper = document.getElementById('overlayWrapper'), overlayContainer = document.getElementById('overlayContainer');
-        const dimmerLayer = document.getElementById('dimmerLayer');
-        const canvasHeightSlider = document.getElementById('canvasHeightSlider'), canvasHeightVal = document.getElementById('canvasHeightVal');
+    const imageGrid = document.getElementById('imageGrid'), captureArea = document.getElementById('captureArea');
+    const overlayWrapper = document.getElementById('overlayWrapper'), overlayContainer = document.getElementById('overlayContainer');
+    const dimmerLayer = document.getElementById('dimmerLayer');
+    const canvasHeightSlider = document.getElementById('canvasHeightSlider'), canvasHeightVal = document.getElementById('canvasHeightVal');
 
-        async function loadOverlays() {
-            try {
-                const response = await fetch('imageOverlay.json');
-                const data = await response.json();
-                overlayData = data.amazon_designs;
+    // FIXED: Updated to handle the outer array [ { "amazon_designs": [...] } ]
+    async function loadOverlays() {
+        try {
+            const response = await fetch('imageOverlay.json');
+            const data = await response.json();
+            
+            // Accessing the first object in the array to get the designs list
+            if (data && data[0] && data[0].amazon_designs) {
+                overlayData = data[0].amazon_designs;
                 renderOverlay();
-            } catch (err) { console.error("JSON Error:", err); }
+            } else {
+                console.error("JSON structure mismatch: Expected an array with 'amazon_designs' key.");
+            }
+        } catch (err) { 
+            console.error("JSON Fetch Error:", err); 
         }
+    }
 
-        function renderOverlay() { if (overlayContainer && overlayData[currentDesignIndex]) overlayContainer.innerHTML = overlayData[currentDesignIndex].html; }
-
-        function updateTransform() {
-            overlayWrapper.style.transform = `translate(${ovX}px, ${ovY}px) scale(${ovZoom})`;
-            document.getElementById('overlayZoomVal').innerText = ovZoom;
-            document.getElementById('overlayXVal').innerText = ovX;
-            document.getElementById('overlayYVal').innerText = ovY;
+    // FIXED: Added safety check to prevent 'undefined' reading errors
+    function renderOverlay() { 
+        if (overlayContainer && overlayData && overlayData[currentDesignIndex]) {
+            overlayContainer.innerHTML = overlayData[currentDesignIndex].html; 
         }
+    }
 
-        canvasHeightSlider.oninput = (e) => {
-            captureArea.style.height = `${e.target.value}px`;
-            canvasHeightVal.innerText = e.target.value;
-        };
+    function updateTransform() {
+        overlayWrapper.style.transform = `translate(${ovX}px, ${ovY}px) scale(${ovZoom})`;
+        document.getElementById('overlayZoomVal').innerText = ovZoom;
+        document.getElementById('overlayXVal').innerText = ovX;
+        document.getElementById('overlayYVal').innerText = ovY;
+    }
 
-        document.getElementById('dimmerSlider').oninput = (e) => {
-            dimmerLayer.style.background = `rgba(0,0,0,${e.target.value})`;
-            document.getElementById('dimmerVal').innerText = e.target.value;
-        };
+    canvasHeightSlider.oninput = (e) => {
+        captureArea.style.height = `${e.target.value}px`;
+        canvasHeightVal.innerText = e.target.value;
+    };
 
-        document.getElementById('overlayZoom').oninput = (e) => { ovZoom = e.target.value; updateTransform(); };
-        document.getElementById('overlayX').oninput = (e) => { ovX = e.target.value; updateTransform(); };
-        document.getElementById('overlayY').oninput = (e) => { ovY = e.target.value; updateTransform(); };
-        
-        document.getElementById('resetOverlay').onclick = () => {
-            ovZoom = 1; ovX = 0; ovY = 0;
-            dimmerLayer.style.background = 'rgba(0,0,0,0)';
-            captureArea.style.height = '580px';
-            canvasHeightSlider.value = 580;
-            canvasHeightVal.innerText = 580;
-            ['overlayZoom','overlayX','overlayY','dimmerSlider'].forEach(id => {
-                const el = document.getElementById(id);
-                el.value = (id==='overlayZoom'?1:0);
-            });
-            updateTransform();
-        };
+    document.getElementById('dimmerSlider').oninput = (e) => {
+        dimmerLayer.style.background = `rgba(0,0,0,${e.target.value})`;
+        document.getElementById('dimmerVal').innerText = e.target.value;
+    };
 
-        document.getElementById('cycleOverlay').onclick = () => {
+    document.getElementById('overlayZoom').oninput = (e) => { ovZoom = e.target.value; updateTransform(); };
+    document.getElementById('overlayX').oninput = (e) => { ovX = e.target.value; updateTransform(); };
+    document.getElementById('overlayY').oninput = (e) => { ovY = e.target.value; updateTransform(); };
+    
+    document.getElementById('resetOverlay').onclick = () => {
+        ovZoom = 1; ovX = 0; ovY = 0;
+        dimmerLayer.style.background = 'rgba(0,0,0,0)';
+        captureArea.style.height = '580px';
+        canvasHeightSlider.value = 580;
+        canvasHeightVal.innerText = 580;
+        ['overlayZoom','overlayX','overlayY','dimmerSlider'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = (id === 'overlayZoom' ? 1 : 0);
+        });
+        updateTransform();
+    };
+
+    // FIXED: Added check for data length to prevent console errors on click
+    document.getElementById('cycleOverlay').onclick = () => {
+        if (overlayData && overlayData.length > 0) {
             currentDesignIndex = (currentDesignIndex + 1) % overlayData.length;
             renderOverlay();
-        };
-
-        document.getElementById('imageUpload').addEventListener('change', (e) => {
-            Array.from(e.target.files).forEach(file => {
-                if (uploadedImages.length < 9) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => { uploadedImages.push(ev.target.result); renderGrid(); };
-                    reader.readAsDataURL(file);
-                }
-            });
-        });
-
-        function renderGrid() {
-            imageGrid.innerHTML = '';
-            if (uploadedImages.length > 6) imageGrid.classList.add('grid-3');
-            else imageGrid.classList.remove('grid-3');
-            uploadedImages.forEach(src => {
-                const img = document.createElement('img');
-                img.src = src; img.className = 'grid-item'; imageGrid.appendChild(img);
-            });
+        } else {
+            console.warn("Overlay data not yet loaded or empty.");
         }
+    };
 
-        document.getElementById('clearImages').onclick = () => { uploadedImages = []; renderGrid(); };
-        document.getElementById('downloadBtn').onclick = () => {
-            html2canvas(captureArea, { scale: 3, useCORS: true }).then(canvas => {
-                const link = document.createElement('a'); link.download = `pin-${Date.now()}.png`; link.href = canvas.toDataURL(); link.click();
-            });
-        };
-        loadOverlays();
-    </script>
+    document.getElementById('imageUpload').addEventListener('change', (e) => {
+        Array.from(e.target.files).forEach(file => {
+            if (uploadedImages.length < 9) {
+                const reader = new FileReader();
+                reader.onload = (ev) => { 
+                    uploadedImages.push(ev.target.result); 
+                    renderGrid(); 
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+
+    function renderGrid() {
+        imageGrid.innerHTML = '';
+        if (uploadedImages.length > 6) imageGrid.classList.add('grid-3');
+        else imageGrid.classList.remove('grid-3');
+        
+        uploadedImages.forEach(src => {
+            const img = document.createElement('img');
+            img.src = src; 
+            img.className = 'grid-item'; 
+            imageGrid.appendChild(img);
+        });
+    }
+
+    document.getElementById('clearImages').onclick = () => { 
+        uploadedImages = []; 
+        renderGrid(); 
+    };
+
+    document.getElementById('downloadBtn').onclick = () => {
+        if (uploadedImages.length === 0) {
+            alert("Please upload at least one image before exporting.");
+            return;
+        }
+        html2canvas(captureArea, { scale: 3, useCORS: true }).then(canvas => {
+            const link = document.createElement('a'); 
+            link.download = `fegoprint-pin-${Date.now()}.png`; 
+            link.href = canvas.toDataURL(); 
+            link.click();
+        });
+    };
+
+    // Initial load call
+    loadOverlays();
+</script>
 </body>
 </html>

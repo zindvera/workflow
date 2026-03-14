@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Garden Pin Studio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --primary-red: #e60023;
+            --sticker-pink: #ff007a;
+            --garden-green: #1b4332; /* Rich, professional green for the price */
+            --workspace-bg: #f3f4f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: var(--workspace-bg);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar UI */
+        .sidebar {
+            width: 360px;
+            background: #ffffff;
+            border-right: 1px solid #dee2e6;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 1000;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #adb5bd;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Preview Pane */
+        .preview-pane {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: var(--workspace-bg);
+        }
+
+        /* The Pin Container (Clean White Canvas) */
+        .pin-container {
+            width: 480px;
+            position: relative;
+            background-color: #ffffff; 
+            box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 4px;
+        }
+
+        .mockup-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        #mockupImg { width: 100%; height: auto; transform-origin: center; }
+
+        .darkness-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            opacity: 0.45;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Text Sticker Overlays */
+        .overlay-layer {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .bubble-sticker {
+            background: white;
+            color: #111;
+            padding: 10px 22px;
+            border-radius: 60px;
+            font-weight: 900;
+            text-transform: uppercase;
+            display: inline-block;
+            margin: 5px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            border: 5px solid white; /* Die-cut effect */
+            line-height: 1;
+        }
+
+        /* Text Hierarchy */
+        .s-small { font-size: 1.2rem; opacity: 0.9; transform: rotate(-1deg); }
+        
+        .s-highlight { 
+            font-size: 2.8rem; 
+            color: var(--garden-green); /* Forest Green Price */
+            transform: rotate(1.5deg);
+            padding: 12px 35px;
+            letter-spacing: -1px;
+        }
+
+        .s-garden { 
+            font-size: 3.4rem; 
+            width: 95%; 
+            border-radius: 20px;
+            letter-spacing: -2px;
+            transform: rotate(-0.5deg);
+        }
+
+        .s-look { 
+            font-size: 1.1rem; 
+            background: rgba(255,255,255,0.9);
+            margin-bottom: -5px;
+            padding: 6px 15px;
+        }
+
+        .s-magical { 
+            font-family: 'Dancing Script', cursive;
+            font-size: 6.5rem; 
+            text-transform: none; 
+            color: var(--sticker-pink); /* Magical Pink */
+            background: white; 
+            padding: 10px 50px;
+            margin-top: 10px;
+            transform: rotate(-3deg);
+            border: 8px solid white;
+        }
+
+        /* Sidebar Elements */
+        .upload-label {
+            background: #212529;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 800;
+            transition: background 0.2s;
+        }
+
+        .upload-label:hover { background: #000; }
+
+        .btn-download {
+            background: #000;
+            color: white;
+            font-weight: 900;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            border: none;
+            width: 100%;
+            margin-top: auto;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .btn-download:hover { background: var(--primary-red); }
+    </style>
+</head>
+
+<body class="d-flex">
+
+    <aside class="sidebar">
+        <div>
+            <h4 class="fw-900 mb-0">Pin Studio</h4>
+            <p class="text-muted small">High-Contrast Garden Design</p>
+        </div>
+
+        <div>
+            <span class="section-title">Canvas</span>
+            <div class="mb-3 mt-2">
+                <label class="small fw-bold text-muted d-block mb-1">Pin Height</label>
+                <input type="range" id="heightSlider" min="500" max="900" value="750" class="form-range">
+            </div>
+        </div>
+
+        <div class="p-3 bg-light rounded-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="section-title m-0">Image Adjustment</span>
+                <label for="imageUpload" class="upload-label">UPLOAD</label>
+                <input type="file" id="imageUpload" accept="image/*" class="d-none">
+            </div>
+
+            <div class="mb-3">
+                <label class="small fw-bold text-muted d-block mb-1">Darkness Overlay</label>
+                <input type="range" id="darknessSlider" min="0" max="95" value="45" class="form-range">
+                <div class="d-flex justify-content-between small text-muted"><span>Bright</span><span>Dark</span></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="small fw-bold text-muted d-block mb-1">Zoom</label>
+                <input type="range" id="zoomSlider" min="0.5" max="3" step="0.01" value="1.1" class="form-range">
+            </div>
+        </div>
+
+        <button id="downloadBtn" class="btn-download text-uppercase">Export HD Pin</button>
+    </aside>
+
+    <main class="preview-pane">
+        <div id="captureArea" class="pin-container" style="height: 750px;">
+            <div class="mockup-layer">
+                <img id="mockupImg" src="" alt="" style="display:none;">
+                <div id="darknessOverlay" class="darkness-overlay"></div>
+                <div id="placeholder" class="text-center p-5 text-muted small fw-bold">UPLOAD IMAGE</div>
+            </div>
+
+            <div class="overlay-layer">
+                <div class="bubble-sticker s-small">This Under</div>
+                <div class="bubble-sticker s-highlight">$20 Item</div>
+                <div class="bubble-sticker s-garden">Will Make Your Garden</div>
+                <div class="bubble-sticker s-look">Look</div>
+                <div class="bubble-sticker s-magical">Magical</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const mockupImg = document.getElementById('mockupImg');
+        const imageUpload = document.getElementById('imageUpload');
+        const captureArea = document.getElementById('captureArea');
+        const heightSlider = document.getElementById('heightSlider');
+        const darknessSlider = document.getElementById('darknessSlider');
+        const darknessOverlay = document.getElementById('darknessOverlay');
+        const zoomSlider = document.getElementById('zoomSlider');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        heightSlider.addEventListener('input', (e) => captureArea.style.height = `${e.target.value}px`);
+        darknessSlider.addEventListener('input', (e) => darknessOverlay.style.opacity = e.target.value / 100);
+        zoomSlider.addEventListener('input', (e) => mockupImg.style.transform = `scale(${e.target.value})`);
+
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    mockupImg.src = event.target.result;
+                    mockupImg.style.display = 'block';
+                    document.getElementById('placeholder').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const originalText = downloadBtn.innerText;
+            downloadBtn.innerText = "PREPARING...";
+            html2canvas(captureArea, {
+                useCORS: true,
+                scale: 3,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `garden-pin-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+                downloadBtn.innerText = originalText;
+            });
+        });
+    </script>
+</body>
+</html>
